@@ -1,4 +1,4 @@
-package net.acomputerdog.lpcontroller.ex;
+package net.acomputerdog.lccontroller.ex;
 
 public class IOTimeoutException extends LaserException {
     public IOTimeoutException() {

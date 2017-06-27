@@ -1,6 +1,6 @@
-package net.acomputerdog.lpcontroller.util;
+package net.acomputerdog.lccontroller.util;
 
-import net.acomputerdog.lpcontroller.ex.ResponseFormatException;
+import net.acomputerdog.lccontroller.ex.ResponseFormatException;
 
 public class NumberUtils {
     public static long parseAxisLoc(String locStr) {

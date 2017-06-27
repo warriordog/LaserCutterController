@@ -1,6 +1,6 @@
-package net.acomputerdog.lpcontroller;
+package net.acomputerdog.lccontroller;
 
-import net.acomputerdog.lpcontroller.util.NumberUtils;
+import net.acomputerdog.lccontroller.util.NumberUtils;
 
 public class Location {
     private long xUM;

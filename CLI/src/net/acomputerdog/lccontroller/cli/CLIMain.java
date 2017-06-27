@@ -1,12 +1,12 @@
-package net.acomputerdog.lpcontroller.cli;
+package net.acomputerdog.lccontroller.cli;
 
 import com.fazecast.jSerialComm.SerialPort;
-import net.acomputerdog.lpcontroller.IOConnection;
-import net.acomputerdog.lpcontroller.LaserCutter;
-import net.acomputerdog.lpcontroller.Location;
-import net.acomputerdog.lpcontroller.ex.InternalIOException;
-import net.acomputerdog.lpcontroller.ex.LaserException;
-import net.acomputerdog.lpcontroller.ex.ResponseFormatException;
+import net.acomputerdog.lccontroller.IOConnection;
+import net.acomputerdog.lccontroller.LaserCutter;
+import net.acomputerdog.lccontroller.Location;
+import net.acomputerdog.lccontroller.ex.InternalIOException;
+import net.acomputerdog.lccontroller.ex.LaserException;
+import net.acomputerdog.lccontroller.ex.ResponseFormatException;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-package net.acomputerdog.lpcontroller.util;
+package net.acomputerdog.lccontroller.util;
 
 import java.util.Enumeration;
 import java.util.Iterator;

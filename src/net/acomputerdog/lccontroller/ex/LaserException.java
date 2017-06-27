@@ -1,4 +1,4 @@
-package net.acomputerdog.lpcontroller.ex;
+package net.acomputerdog.lccontroller.ex;
 
 public class LaserException extends RuntimeException {
     public LaserException() {

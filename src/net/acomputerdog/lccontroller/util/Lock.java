@@ -1,4 +1,4 @@
-package net.acomputerdog.lpcontroller.util;
+package net.acomputerdog.lccontroller.util;
 
 public class Lock {
     private final Object lock;

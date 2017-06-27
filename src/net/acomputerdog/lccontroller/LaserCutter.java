@@ -1,8 +1,8 @@
-package net.acomputerdog.lpcontroller;
+package net.acomputerdog.lccontroller;
 
-import net.acomputerdog.lpcontroller.ex.IOTimeoutException;
-import net.acomputerdog.lpcontroller.ex.ResponseFormatException;
-import net.acomputerdog.lpcontroller.util.NumberUtils;
+import net.acomputerdog.lccontroller.ex.IOTimeoutException;
+import net.acomputerdog.lccontroller.ex.ResponseFormatException;
+import net.acomputerdog.lccontroller.util.NumberUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,8 @@
-package net.acomputerdog.lpcontroller;
+package net.acomputerdog.lccontroller;
 
 import com.fazecast.jSerialComm.SerialPort;
-import net.acomputerdog.lpcontroller.ex.InternalIOException;
-import net.acomputerdog.lpcontroller.util.LockedNotifier;
+import net.acomputerdog.lccontroller.ex.InternalIOException;
+import net.acomputerdog.lccontroller.util.LockedNotifier;
 
 import java.io.*;
 import java.util.LinkedList;
