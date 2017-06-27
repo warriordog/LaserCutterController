@@ -23,8 +23,8 @@ public class IOConnection {
 
     private boolean isOpen = true;
 
-    private final LockedNotifier ackLock = new LockedNotifier(false);
-    private final LockedNotifier lineLock = new LockedNotifier(true);
+    private final LockedNotifier ackLock = new LockedNotifier();
+    private final LockedNotifier lineLock = new LockedNotifier();
 
     public IOConnection(SerialPort serialPort) {
         this.serialPort = serialPort;

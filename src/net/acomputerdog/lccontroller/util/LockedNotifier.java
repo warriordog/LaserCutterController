@@ -7,12 +7,6 @@ public class LockedNotifier {
     private final Semaphore notifiedLock = new Semaphore(1);
     private volatile int notifyCount = 0;
 
-    private boolean debug;
-
-    public LockedNotifier(boolean debug) {
-        this.debug = debug;
-    }
-
     public boolean waitForNotify() {
         return waitForNotify(-1);
     }
@@ -54,10 +48,6 @@ public class LockedNotifier {
     }
 
     public void release() {
-        if (debug) {
-            //System.out.println("Releasing: count=" + (notifyCount+ 1));
-        }
-
         notifiedLock.acquireUninterruptibly();
         notifyCount++;
         notifiedLock.release();
