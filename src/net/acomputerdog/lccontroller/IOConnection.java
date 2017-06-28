@@ -6,8 +6,10 @@ import net.acomputerdog.lccontroller.util.LockedNotifier;
 
 import java.io.*;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
+import java.util.function.Consumer;
 
 public class IOConnection {
     private static final int INPUT_BUFFER_SIZE = 2048;
@@ -26,6 +28,9 @@ public class IOConnection {
     private final LockedNotifier ackLock = new LockedNotifier();
     private final LockedNotifier lineLock = new LockedNotifier();
 
+    private final List<Consumer<String>> lineReceivedMonitors = new LinkedList<>();
+    private final List<Consumer<String>> lineSentMonitors = new LinkedList<>();
+
     public IOConnection(SerialPort serialPort) {
         this.serialPort = serialPort;
 
@@ -38,14 +43,19 @@ public class IOConnection {
 
             @Override
             public void run() {
-                while (isOpen) {
-                    try {
+                try {
+                    while (isOpen) {
                         // read a char.  it will either be added, ignored as /n, or ignored because line is too long
                         char chr = (char) serialIn.read();
 
                         // if we get a newline, then store line
                         if (chr == '\n') {
                             String line = String.valueOf(buffer, 0, bufferPos);
+
+                            for (Consumer<String> receiver : lineReceivedMonitors) {
+                                receiver.accept(line);
+                            }
+
                             if ("OK".equals(line)) {
                                 ackLock.release();
                             } else {
@@ -65,15 +75,16 @@ public class IOConnection {
                             buffer[bufferPos] = chr;
                             bufferPos++;
                         }
-                    } catch (IOException e) {
-                        System.err.println("Exception in serial read thread.");
-                        e.printStackTrace();
-                        close();
                     }
+                } catch (Exception e) {
+                    //System.err.println("Exception in serial read thread.");
+                    //e.printStackTrace();
+                    close();
                 }
             }
         });
         serialReader.setDaemon(true);
+        serialReader.setName("Serial_Read_Thread");
         serialReader.start();
     }
 
@@ -111,24 +122,60 @@ public class IOConnection {
         }
     }
 
-    public boolean send(String line, long timeout) {
+    public void sendAsync(String line) {
         try {
             serialOut.write(line);
             serialOut.write('\n');
             serialOut.flush();
 
-            return ackLock.waitForNotify(timeout);
+            for (Consumer<String> receiver : lineSentMonitors) {
+                receiver.accept(line);
+            }
         } catch (IOException e) {
             throw new InternalIOException("Exception writing line.", e);
         }
     }
 
+    public boolean send(String line, long timeout) {
+        sendAsync(line);
+
+        return ackLock.waitForNotify(timeout);
+    }
+
     public void close() {
         isOpen = false;
+        serialReader.interrupt();
         closeSafe(serialIn);
         closeSafe(serialOut);
-        serialReader.interrupt();
         serialPort.closePort();
+    }
+
+    public void addLineSentMonitor(Consumer<String> monitor) {
+        if (monitor != null) {
+            lineSentMonitors.add(monitor);
+        }
+    }
+
+    public void addLineReceivedMonitor(Consumer<String> monitor) {
+        if (monitor != null) {
+            lineReceivedMonitors.add(monitor);
+        }
+    }
+
+    public void removeLineSentMonitor(Consumer<String> monitor) {
+        if (monitor != null) {
+            lineSentMonitors.remove(monitor);
+        }
+    }
+
+    public void removeLineReceivedMonitor(Consumer<String> monitor) {
+        if (monitor != null) {
+            lineReceivedMonitors.remove(monitor);
+        }
+    }
+
+    public boolean isConnected() {
+        return isOpen;
     }
 
     private static void closeSafe(Closeable closeable) {

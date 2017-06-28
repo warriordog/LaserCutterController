@@ -173,4 +173,12 @@ public class LaserCutter {
     public int getLaserPower() {
         return laserPower;
     }
+
+    public IOConnection getConnection() {
+        return connection;
+    }
+
+    public boolean isConnected() {
+        return connection.isConnected();
+    }
 }
