@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="GUI:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/GUI_jar</output-path>
+    <root id="archive" name="GUI.jar">
+      <element id="module-output" name="GUI" />
+      <element id="module-output" name="CLI" />
+      <element id="module-output" name="LaserPrinterController" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jSerialComm-1.3.11.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
