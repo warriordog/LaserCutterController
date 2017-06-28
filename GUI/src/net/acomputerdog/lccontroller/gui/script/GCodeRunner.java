@@ -11,7 +11,7 @@ public class GCodeRunner implements ScriptRunner {
     boolean finished = false;
     String error = null;
     float progress = 0f;
-    boolean ack = false;
+    boolean ack = true; //true so first command can be sent
 
     public GCodeRunner(GUIMain main, File file) throws FileNotFoundException {
         gcodeReader = new BufferedReader(new FileReader(file));

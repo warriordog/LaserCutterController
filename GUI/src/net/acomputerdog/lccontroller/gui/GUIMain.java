@@ -195,7 +195,6 @@ public class GUIMain {
                         mainWindow.serialTextArea.append("\n");
 
                         // record ACks for script
-                        System.out.printf("Received '%s'\n", line);
                         if (currentScript != null && line.equals("OK")) {
                             currentScript.onAck();
                         }
@@ -204,8 +203,6 @@ public class GUIMain {
                         mainWindow.serialTextArea.append("-->");
                         mainWindow.serialTextArea.append(line);
                         mainWindow.serialTextArea.append("\n");
-
-                        System.out.printf("Sent '%s'\n", line);
                     });
 
                     // connect to printer
