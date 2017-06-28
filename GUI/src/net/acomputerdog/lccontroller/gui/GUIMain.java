@@ -3,10 +3,7 @@ package net.acomputerdog.lccontroller.gui;
 import com.fazecast.jSerialComm.SerialPort;
 import net.acomputerdog.lccontroller.IOConnection;
 import net.acomputerdog.lccontroller.LaserCutter;
-import net.acomputerdog.lccontroller.gui.message.ConnectMessage;
-import net.acomputerdog.lccontroller.gui.message.DisconnectMessage;
-import net.acomputerdog.lccontroller.gui.message.Message;
-import net.acomputerdog.lccontroller.gui.message.OpenGCodeMessage;
+import net.acomputerdog.lccontroller.gui.message.*;
 import net.acomputerdog.lccontroller.gui.script.GCodeRunner;
 import net.acomputerdog.lccontroller.gui.script.ScriptRunner;
 import net.acomputerdog.lccontroller.gui.window.MainWindow;
@@ -152,6 +149,10 @@ public class GUIMain {
                     addLogLine("Unable to open file: '" + ((OpenGCodeMessage) m).file + "'");
                     new PopupMessage(mainWindow, "File not found", String.format("The file %s could not be found.", ((OpenGCodeMessage) m).file));
                 }
+                continue;
+            }
+            if (m instanceof OpenCMDMessage) {
+                new PopupMessage(mainWindow, "Not Implemented", "Sorry, that feature is not yet implemented.");
                 continue;
             }
 
