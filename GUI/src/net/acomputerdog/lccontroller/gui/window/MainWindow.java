@@ -29,7 +29,6 @@ public class MainWindow extends JFrame {
     private JButton cliSendButton;
     private JPanel scriptPanel;
     private JButton exitButton;
-    private JTextPane laserStatusPane;
     private JToolBar statusBar;
     public JLabel statusLabel;
     private JPanel logTab;
@@ -54,10 +53,13 @@ public class MainWindow extends JFrame {
     private JRadioButton x01Radio;
     private JButton xUpButton;
     private JButton xDownButton;
-    public JTextField xLocField;
-    public JTextField yLocField;
+    private JTextField newXLocField;
+    private JTextField newYLocField;
     private JButton locGoButton;
     private JCheckBox relativeCheck;
+    public JTextField laserPowerField;
+    public JTextField xLocField;
+    public JTextField yLocField;
 
     private JMenu fileMenu;
     private JMenuItem openGCodeItem;
@@ -129,8 +131,8 @@ public class MainWindow extends JFrame {
         stopScriptButton.addActionListener(e -> guiMain.sendMessage(new StopScriptMessage()));
         locGoButton.addActionListener(e -> {
             try {
-                long xUm = NumberUtils.parseAxisLoc(xLocField.getText());
-                long yUm = NumberUtils.parseAxisLoc(yLocField.getText());
+                long xUm = NumberUtils.parseAxisLoc(newXLocField.getText());
+                long yUm = NumberUtils.parseAxisLoc(newYLocField.getText());
 
                 if (!relativeCheck.isSelected()) {
                     guiMain.getLaser().move(new Location(xUm, yUm));
@@ -171,7 +173,13 @@ public class MainWindow extends JFrame {
             xStep *= -1;
             yStep *= -1;
         }
-        guiMain.moveBy(xStep, yStep);
+
+        if (guiMain.isConnected()) {
+            guiMain.moveBy(xStep, yStep);
+            Location loc = guiMain.getLaser().getLocation();
+            newXLocField.setText(String.format("%d.%d", loc.getXMM(), (loc.getXUM() % 1000)));
+            newYLocField.setText(String.format("%d.%d", loc.getYMM(), (loc.getYUM() % 1000)));
+        }
     }
 
     private void createUIComponents() {

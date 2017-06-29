@@ -106,7 +106,7 @@ public class CLIParser {
                         main.sendLine("You must specify one or more axis to adjust.");
                     } else {
                         try {
-                            Location l = laser.getCurrLocation();
+                            Location l = laser.getLocation();
                             l.setFromString(line.substring(split + 1));
                             laser.move(l);
                             main.sendLine(laser.getLocation());
@@ -182,7 +182,7 @@ public class CLIParser {
                     break;
                 }
                 case "getlaserstate": {
-                    if (laser.getLaserState()) {
+                    if (laser.isLaserOn()) {
                         main.sendLine("Laser is: ON");
                     } else {
                         main.sendLine("Laser is: OFF");

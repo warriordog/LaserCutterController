@@ -37,6 +37,15 @@ public class GUIMain {
 
     private final PrintWriter logWriter;
 
+    // last state values to avoid refreshing UI unnecessarily.
+    private boolean lastLaserState = false;
+    private int lastLaserPower = -1;
+    private Location lastLaserLocation = new Location(0, 0);
+    private String lastStatus = null;
+
+    // duration between I1 update commands (ms)
+    private long laserUpdateInterval = 1000;
+
     public GUIMain() {
         mainWindow = new MainWindow(this);
 
@@ -75,11 +84,14 @@ public class GUIMain {
                     addLogLine("Script finished.");
                     currentScript = null;
                     // tick script
-                } else {
+                } else if (currentScript.isStarted()) {
                     scriptStatus = "Script running.";
                     currentScript.tick();
                     mainWindow.scriptLastInstruction.setText(currentScript.getLastLine());
                     mainWindow.scriptProgress.setValue((int) (currentScript.getEstimatedProgress() * 100.0f));
+                } else {
+                    // script has not started
+                    scriptStatus = "Script ready.";
                 }
             }
         });
@@ -96,8 +108,49 @@ public class GUIMain {
             if (scriptStatus != null) {
                 state = scriptStatus;
             }
-            setStatus(state);
+
+            if (!state.equals(lastStatus)) {
+                lastStatus = state;
+                setStatus(state);
+            }
         });
+
+        // add a task to refresh laser status
+        threadTasks.add(() -> {
+            if (isConnected()) {
+                if (lastLaserState != laser.isLaserOn() || lastLaserPower != laser.getLaserPower()) {
+                    lastLaserState = laser.isLaserOn();
+                    lastLaserPower = laser.getLaserPower();
+                    if (laser.isLaserOn()) {
+                        mainWindow.laserPowerField.setText(String.format("%.2f%%", (((float) laser.getLaserPower()) / 255f) * 100f));
+                    } else {
+                        mainWindow.laserPowerField.setText("off");
+                    }
+                }
+
+
+                Location loc = laser.getLocation();
+                if (!loc.equals(lastLaserLocation)) {
+                    lastLaserLocation = loc;
+                    mainWindow.xLocField.setText(String.format("%d.%d", loc.getXMM(), loc.getXUM() % 1000));
+                    mainWindow.yLocField.setText(String.format("%d.%d", loc.getYMM(), loc.getYUM() % 1000));
+                }
+            }
+        });
+
+        // add a task to poll machine for status
+        threadTasks.add(new Runnable() {
+            private long lastRunTime;
+
+            @Override
+            public void run() {
+                if (isConnected() && System.currentTimeMillis() - lastRunTime > laserUpdateInterval) {
+                    lastRunTime = System.currentTimeMillis();
+                    laser.requestImmediateUpdate();
+                }
+            }
+        });
+
         while (isRunning) {
             try {
 
@@ -195,39 +248,50 @@ public class GUIMain {
                     // set up port
                     port.setComPortParameters(baud, dataBits, stopBits, parity);
                     port.setFlowControl(flowMode);
-                    port.openPort();
+                    if (port.openPort()) {
 
-                    // connect to serial
-                    IOConnection connection = new IOConnection(port);
-                    connection.addLineReceivedMonitor(line -> {
-                        mainWindow.serialTextArea.append("<--");
-                        mainWindow.serialTextArea.append(line.replace('\n', '□'));
-                        mainWindow.serialTextArea.append("\n");
+                        // connect to serial
+                        IOConnection connection = new IOConnection(port);
+                        connection.addLineReceivedMonitor(line -> {
+                            mainWindow.serialTextArea.append("<--");
+                            mainWindow.serialTextArea.append(line.replace('\n', '□'));
+                            mainWindow.serialTextArea.append("\n");
 
-                        // record ACks for script
-                        if (currentScript != null && line.equals("OK")) {
-                            currentScript.onAck();
-                        }
-                    });
-                    connection.addLineSentMonitor(line -> {
-                        mainWindow.serialTextArea.append("-->");
-                        mainWindow.serialTextArea.append(line);
-                        mainWindow.serialTextArea.append("\n");
-                    });
+                            // record ACks for script
+                            if (currentScript != null && line.equals("OK")) {
+                                currentScript.onAck();
+                            }
+                        });
+                        connection.addLineSentMonitor(line -> {
+                            mainWindow.serialTextArea.append("-->");
+                            mainWindow.serialTextArea.append(line);
+                            mainWindow.serialTextArea.append("\n");
+                        });
 
-                    // connect to printer
-                    laser = new LaserCutter(connection);
+                        // connect to printer
+                        laser = new LaserCutter(connection);
 
-                    // set up CLI
-                    cliInterface = new CLIInterface(connection, laser, this);
+                        // set up CLI
+                        cliInterface = new CLIInterface(connection, laser, this);
 
-                    addLogLine("Connected to laser cutter.");
-                    setStatus("Connected.");
+                        addLogLine("Connected to laser cutter.");
+                        setStatus("Connected.");
+                    } else {
+                        setStatus("Unable to open port.");
+                        addLogLine("Unable to open port.");
+                    }
                     return;
                 }
             }
             setStatus("Connect failed: port not found.");
         } catch (Exception e) {
+            if (laser != null) {
+                try {
+                    laser.disconnect();
+                } catch (Exception ignored) {
+                }
+                laser = null;
+            }
             setStatus("Connect failed: " + e.toString());
             System.err.println("Exception connecting.");
             e.printStackTrace();
@@ -302,11 +366,6 @@ public class GUIMain {
     public void moveBy(long xUm, long yUm) {
         if (laser != null) {
             laser.moveBy(xUm, yUm);
-            if (mainWindow != null) {
-                Location loc = laser.getLocation();
-                mainWindow.xLocField.setText(String.format("%d.%d", loc.getXMM(), (loc.getXUM() % 1000)));
-                mainWindow.yLocField.setText(String.format("%d.%d", loc.getYMM(), (loc.getYUM() % 1000)));
-            }
         }
     }
 

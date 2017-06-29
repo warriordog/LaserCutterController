@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LaserCutter {
-    public static final long TIMEOUT = 3000L;
+    public static final long DEFAULT_TIMEOUT = 4000L;
 
     private final IOConnection connection;
     private final String fwLine;
@@ -21,7 +21,8 @@ public class LaserCutter {
 
     public LaserCutter(IOConnection connection) {
         this.connection = connection;
-        this.fwLine = connection.waitForLine(TIMEOUT);
+
+        this.fwLine = connection.waitForLine(DEFAULT_TIMEOUT);
         if (fwLine == null) {
             throw new IOTimeoutException("Did not receive firmware ID line.");
         }
@@ -30,10 +31,28 @@ public class LaserCutter {
         enableMotors(motorsOn);
         enableLaser(laserOn);
         setLaserPower(laserPower);
+
+        // listen in on gcode responses to keep state
+        connection.addLineReceivedMonitor(line -> {
+            try {
+                // position update
+                if (line.startsWith("M114")) {
+                    readLocation(line);
+                    // laser power update
+                } else if (line.startsWith("M105")) {
+                    readLaser(line);
+                    // full update
+                } else if (line.startsWith("I1")) {
+                    readFullUpdate(line);
+                }
+
+            } catch (Exception ignore) {
+            }
+        });
     }
 
     public boolean sendLine(String line) {
-        return connection.send(line, TIMEOUT);
+        return connection.send(line, DEFAULT_TIMEOUT);
     }
 
     public void move(Location loc) {
@@ -57,12 +76,12 @@ public class LaserCutter {
             throw new IOTimeoutException("Laser did not respond to M145 in time.");
         }
 
-        String line = connection.waitForLine(TIMEOUT);
+        String line = connection.waitForLine(DEFAULT_TIMEOUT);
         if (line != null) {
             if ("M145".equals(line.trim())) {
                 List<String> lines = new ArrayList<>();
                 while (true) {
-                    String l = connection.waitForLine(TIMEOUT);
+                    String l = connection.waitForLine(DEFAULT_TIMEOUT);
                     if (l != null) {
                         if ("EOL".equals(l.trim())) {
                             break;
@@ -82,7 +101,7 @@ public class LaserCutter {
         }
     }
 
-    public Location getCurrLocation() {
+    public Location getLocation() {
         return new Location(currLocation);
     }
 
@@ -91,29 +110,12 @@ public class LaserCutter {
             throw new IOTimeoutException("Laser did not respond to M114 in time.");
         }
 
-        String line = connection.waitForLine(TIMEOUT);
+        String line = connection.waitForLine(DEFAULT_TIMEOUT);
         if (line != null) {
             String response = line.trim();
 
             if (response.startsWith("M114")) {
-                String[] parts = response.split(" ");
-                for (String part : parts) {
-                    // needs at least 3 chars: 'X:N...'
-                    if (part.length() > 2) {
-                        int split = part.indexOf(':');
-                        if (split == 1) {
-                            // part with numbers
-                            String numPart = part.substring(2);
-                            long num = NumberUtils.parseAxisLoc(numPart);
-
-                            if (part.charAt(0) == 'X') {
-                                currLocation.setXUM(num);
-                            } else if (part.charAt(0) == 'Y') {
-                                currLocation.setYUM(num);
-                            }
-                        }
-                    }
-                }
+                readLocation(response);
             } else {
                 throw new ResponseFormatException("Response with incorrect gcode: '" + response + "'");
             }
@@ -122,12 +124,83 @@ public class LaserCutter {
         }
     }
 
-    public void disconnect() {
-        connection.close();
+    private void readLocation(String response) {
+        String[] parts = response.split(" ");
+        for (String part : parts) {
+            // needs at least 3 chars: 'X:N...'
+            if (part.length() > 2) {
+                int split = part.indexOf(':');
+                if (split == 1) {
+                    // part with numbers
+                    String numPart = part.substring(2);
+                    long num = NumberUtils.parseAxisLoc(numPart);
+
+                    if (part.charAt(0) == 'X') {
+                        currLocation.setXUM(num);
+                    } else if (part.charAt(0) == 'Y') {
+                        currLocation.setYUM(num);
+                    }
+                }
+            }
+        }
     }
 
-    public Location getLocation() {
-        return currLocation;
+    private void readFullUpdate(String line) {
+        int spaceIdx = line.indexOf(' ');
+        while (spaceIdx > -1) {
+            // need at least two characters after space
+            if (line.length() - spaceIdx < 3) {
+                break;
+            } else {
+                int nextIdx = line.indexOf(' ', spaceIdx + 1);
+                try {
+                    char ch = line.charAt(spaceIdx + 1);
+                    long num;
+                    if (nextIdx > -1) {
+                        num = Long.parseLong(line.substring(spaceIdx + 2, nextIdx));
+                    } else {
+                        num = Long.parseLong(line.substring(spaceIdx + 2));
+                    }
+
+                    switch (ch) {
+                        case 'X':
+                            currLocation.setXUM(num);
+                            break;
+                        case 'Y':
+                            currLocation.setYUM(num);
+                            break;
+                        case 'F':
+                            speed = num;
+                            break;
+                        case 'P':
+                            laserOn = (num == 1);
+                            break;
+                        case 'S':
+                            laserPower = (int) num;
+                            break;
+                        default:
+                            //invalid letter, ignore
+                            break;
+                    }
+                } catch (NumberFormatException e) {
+                    // bad number, ignore
+                }
+
+                spaceIdx = nextIdx;
+            }
+        }
+    }
+
+    private void readLaser(String line) {
+        int space = line.indexOf(' ');
+        if (space > -1 && line.length() - space > 2) {
+            this.laserPower = Integer.parseInt(line.substring(space + 1));
+            this.laserOn = this.laserPower >= 0;
+        }
+    }
+
+    public void disconnect() {
+        connection.close();
     }
 
     public void enableMotors(boolean enable) {
@@ -166,7 +239,7 @@ public class LaserCutter {
         return motorsOn;
     }
 
-    public boolean getLaserState() {
+    public boolean isLaserOn() {
         return laserOn;
     }
 
@@ -184,5 +257,9 @@ public class LaserCutter {
 
     public void moveBy(long xUm, long yUm) {
         move(new Location(currLocation.getXUM() + xUm, currLocation.getYUM() + yUm));
+    }
+
+    public void requestImmediateUpdate() {
+        connection.sendAsync("I1");
     }
 }
