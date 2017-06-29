@@ -3,6 +3,7 @@ package net.acomputerdog.lccontroller.gui;
 import com.fazecast.jSerialComm.SerialPort;
 import net.acomputerdog.lccontroller.IOConnection;
 import net.acomputerdog.lccontroller.LaserCutter;
+import net.acomputerdog.lccontroller.Location;
 import net.acomputerdog.lccontroller.gui.message.*;
 import net.acomputerdog.lccontroller.gui.script.GCodeRunner;
 import net.acomputerdog.lccontroller.gui.script.ScriptRunner;
@@ -62,6 +63,7 @@ public class GUIMain {
         // add a task to tick scripts
         threadTasks.add(() -> {
             if (currentScript != null) {
+                // end script
                 if (currentScript.isFinished()) {
                     String error = currentScript.getErrors();
                     if (error != null) {
@@ -72,17 +74,17 @@ public class GUIMain {
                     }
                     addLogLine("Script finished.");
                     currentScript = null;
-                } else if (!currentScript.isStarted()) {
-                    scriptStatus = "Script Starting...";
-                    currentScript.start();
+                    // tick script
                 } else {
                     scriptStatus = "Script running.";
                     currentScript.tick();
+                    mainWindow.scriptLastInstruction.setText(currentScript.getLastLine());
+                    mainWindow.scriptProgress.setValue((int) (currentScript.getEstimatedProgress() * 100.0f));
                 }
             }
         });
 
-        // add a task
+        // add a task to set status bar message
         threadTasks.add(() -> {
             String state = "Error: Unknown state";
             if (isConnected()) {
@@ -132,31 +134,38 @@ public class GUIMain {
                 disconnect();
                 ConnectMessage cm = (ConnectMessage) m;
                 connect(cm.port, cm.baud, cm.dataBits, cm.stopBits, cm.parity, cm.flowMode);
-                continue;
-            }
-            if (m instanceof DisconnectMessage) {
+            } else if (m instanceof DisconnectMessage) {
                 disconnect();
-                continue;
-            }
-            if (m instanceof OpenGCodeMessage) {
+            } else if (m instanceof OpenGCodeMessage) {
                 if (currentScript != null) {
                     currentScript.stop();
                 }
                 try {
                     currentScript = new GCodeRunner(this, ((OpenGCodeMessage) m).file);
-                    currentScript.start();
                 } catch (FileNotFoundException e) {
                     addLogLine("Unable to open file: '" + ((OpenGCodeMessage) m).file + "'");
                     new PopupMessage(mainWindow, "File not found", String.format("The file %s could not be found.", ((OpenGCodeMessage) m).file));
                 }
-                continue;
-            }
-            if (m instanceof OpenCMDMessage) {
+            } else if (m instanceof OpenCMDMessage) {
+                //TODO implement
                 new PopupMessage(mainWindow, "Not Implemented", "Sorry, that feature is not yet implemented.");
-                continue;
+            } else if (m instanceof StartScriptMessage) {
+                if (currentScript != null) {
+                    if (!currentScript.isStarted()) {
+                        currentScript.start();
+                    } else {
+                        new PopupMessage(mainWindow, "Script already running", "The script is already running.");
+                    }
+                } else {
+                    new PopupMessage(mainWindow, "Script not loaded", "Please load a script from the \"printer\" menu.");
+                }
+            } else if (m instanceof StopScriptMessage) {
+                if (currentScript != null) {
+                    currentScript.stop();
+                }
+            } else {
+                addLogLine("Error: Unknown message type: " + (m == null ? "null" : m.getClass().getName()));
             }
-
-            addLogLine("Error: Unknown message type: " + (m == null ? "null" : m.getClass().getName()));
         }
     }
 
@@ -288,6 +297,17 @@ public class GUIMain {
 
     public boolean isConnected() {
         return laser != null && laser.isConnected();
+    }
+
+    public void moveBy(long xUm, long yUm) {
+        if (laser != null) {
+            laser.moveBy(xUm, yUm);
+            if (mainWindow != null) {
+                Location loc = laser.getLocation();
+                mainWindow.xLocField.setText(String.format("%d.%d", loc.getXMM(), (loc.getXUM() % 1000)));
+                mainWindow.yLocField.setText(String.format("%d.%d", loc.getYMM(), (loc.getYUM() % 1000)));
+            }
+        }
     }
 
     public static void main(String[] args) {

@@ -181,4 +181,8 @@ public class LaserCutter {
     public boolean isConnected() {
         return connection.isConnected();
     }
+
+    public void moveBy(long xUm, long yUm) {
+        move(new Location(currLocation.getXUM() + xUm, currLocation.getYUM() + yUm));
+    }
 }

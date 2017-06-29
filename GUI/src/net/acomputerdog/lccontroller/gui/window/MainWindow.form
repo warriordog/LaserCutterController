@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="500" height="400"/>
+      <xy x="20" y="20" width="773" height="480"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -26,24 +26,218 @@
             <properties/>
             <border type="none"/>
             <children>
-              <grid id="b17fe" binding="placeHolder2" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="b17fe" binding="scriptPanel" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <splitpane position="right"/>
                 </constraints>
                 <properties/>
                 <border type="none"/>
-                <children/>
+                <children>
+                  <toolbar id="16f1c" binding="scriptToolbar">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="-1" height="20"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <floatable value="false"/>
+                    </properties>
+                    <border type="none"/>
+                    <children>
+                      <component id="68097" class="javax.swing.JButton" binding="startScriptButton">
+                        <constraints/>
+                        <properties>
+                          <text value="Start"/>
+                        </properties>
+                      </component>
+                      <component id="28abf" class="javax.swing.JButton" binding="stopScriptButton">
+                        <constraints/>
+                        <properties>
+                          <text value="Stop"/>
+                        </properties>
+                      </component>
+                      <component id="56f54" class="javax.swing.JProgressBar" binding="scriptProgress">
+                        <constraints/>
+                        <properties/>
+                      </component>
+                    </children>
+                  </toolbar>
+                  <vspacer id="b6a61">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </vspacer>
+                  <component id="6de79" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Last instruction:"/>
+                    </properties>
+                  </component>
+                  <component id="18d4d" class="javax.swing.JTextField" binding="scriptLastInstruction">
+                    <constraints>
+                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <editable value="false"/>
+                      <enabled value="false"/>
+                    </properties>
+                  </component>
+                </children>
               </grid>
-              <component id="c169a" class="javax.swing.JTextPane" binding="laserStatusPane">
+              <grid id="e4ad7" layout-manager="GridLayoutManager" row-count="4" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <splitpane position="left"/>
                 </constraints>
-                <properties>
-                  <contentType value="text/html"/>
-                  <text value="&lt;html&gt;&#10;  &lt;head&gt;&#10;    &#10;  &lt;/head&gt;&#10;  &lt;body&gt;&#10;    Disconnected.&#10;  &lt;/body&gt;&#10;&lt;/html&gt;&#10;"/>
-                </properties>
-              </component>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="c169a" class="javax.swing.JTextPane" binding="laserStatusPane">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <contentType value="text/html"/>
+                      <text value="&lt;html&gt;&#10;  &lt;head&gt;&#10;    &#10;  &lt;/head&gt;&#10;  &lt;body&gt;&#10;    Disconnected.&#10;  &lt;/body&gt;&#10;&lt;/html&gt;&#10;"/>
+                    </properties>
+                  </component>
+                  <component id="de91" class="javax.swing.JRadioButton" binding="y10Radio">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="10mm"/>
+                    </properties>
+                  </component>
+                  <component id="5f1b0" class="javax.swing.JRadioButton" binding="y1Radio">
+                    <constraints>
+                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <selected value="true"/>
+                      <text value="1mm"/>
+                    </properties>
+                  </component>
+                  <component id="c4fc5" class="javax.swing.JRadioButton" binding="y01Radio">
+                    <constraints>
+                      <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="0.1mm"/>
+                    </properties>
+                  </component>
+                  <component id="93dcf" class="javax.swing.JButton" binding="yDownButton">
+                    <constraints>
+                      <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Y-"/>
+                    </properties>
+                  </component>
+                  <component id="1cd9a" class="javax.swing.JButton" binding="yUpButton">
+                    <constraints>
+                      <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Y+"/>
+                    </properties>
+                  </component>
+                  <component id="2e81b" class="javax.swing.JRadioButton" binding="x10Radio">
+                    <constraints>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="10mm"/>
+                    </properties>
+                  </component>
+                  <component id="527a1" class="javax.swing.JRadioButton" binding="x1Radio">
+                    <constraints>
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <selected value="true"/>
+                      <text value="1mm"/>
+                    </properties>
+                  </component>
+                  <component id="2770d" class="javax.swing.JRadioButton" binding="x01Radio">
+                    <constraints>
+                      <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="0.1mm"/>
+                    </properties>
+                  </component>
+                  <component id="a5317" class="javax.swing.JButton" binding="xUpButton">
+                    <constraints>
+                      <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="X+"/>
+                    </properties>
+                  </component>
+                  <component id="bf4f6" class="javax.swing.JButton" binding="xDownButton">
+                    <constraints>
+                      <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="X-"/>
+                    </properties>
+                  </component>
+                  <component id="84c57" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Location:"/>
+                    </properties>
+                  </component>
+                  <component id="14096" class="javax.swing.JButton" binding="locGoButton">
+                    <constraints>
+                      <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Go"/>
+                    </properties>
+                  </component>
+                  <component id="3180d" class="javax.swing.JCheckBox" binding="relativeCheck">
+                    <constraints>
+                      <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Rel"/>
+                    </properties>
+                  </component>
+                  <component id="bed7d" class="javax.swing.JTextField" binding="xLocField">
+                    <constraints>
+                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="25" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <editable value="true"/>
+                      <enabled value="true"/>
+                      <text value="0.0"/>
+                    </properties>
+                  </component>
+                  <component id="c79a9" class="javax.swing.JTextField" binding="yLocField">
+                    <constraints>
+                      <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                        <preferred-size width="25" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties>
+                      <editable value="true"/>
+                      <enabled value="true"/>
+                      <text value="0.0"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
             </children>
           </splitpane>
           <tabbedpane id="e1b0" binding="consoleTabs">
@@ -205,4 +399,21 @@
       </component>
     </children>
   </grid>
+  <buttonGroups>
+    <group name="ySpeedGroup">
+      <member id="de91"/>
+      <member id="5f1b0"/>
+      <member id="c4fc5"/>
+    </group>
+    <group name="xButtonGroup">
+      <member id="f3faf"/>
+      <member id="7d245"/>
+      <member id="5b07b"/>
+    </group>
+    <group name="xSpeedGroup">
+      <member id="2e81b"/>
+      <member id="527a1"/>
+      <member id="2770d"/>
+    </group>
+  </buttonGroups>
 </form>

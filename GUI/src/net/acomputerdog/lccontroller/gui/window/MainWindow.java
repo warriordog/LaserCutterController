@@ -1,9 +1,10 @@
 package net.acomputerdog.lccontroller.gui.window;
 
+import net.acomputerdog.lccontroller.Location;
+import net.acomputerdog.lccontroller.ex.ResponseFormatException;
 import net.acomputerdog.lccontroller.gui.GUIMain;
-import net.acomputerdog.lccontroller.gui.message.DisconnectMessage;
-import net.acomputerdog.lccontroller.gui.message.OpenCMDMessage;
-import net.acomputerdog.lccontroller.gui.message.OpenGCodeMessage;
+import net.acomputerdog.lccontroller.gui.message.*;
+import net.acomputerdog.lccontroller.util.NumberUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -26,7 +27,7 @@ public class MainWindow extends JFrame {
     public JTextArea cliTextArea;
     public JTextField cliSendField;
     private JButton cliSendButton;
-    private JPanel placeHolder2;
+    private JPanel scriptPanel;
     private JButton exitButton;
     private JTextPane laserStatusPane;
     private JToolBar statusBar;
@@ -38,6 +39,25 @@ public class MainWindow extends JFrame {
     private JScrollPane cliScrollPane;
     private JButton serialClearButton;
     private JMenuBar menuBar;
+    private JToolBar scriptToolbar;
+    private JButton startScriptButton;
+    private JButton stopScriptButton;
+    public JProgressBar scriptProgress;
+    public JTextField scriptLastInstruction;
+    private JRadioButton y10Radio;
+    private JRadioButton y1Radio;
+    private JRadioButton y01Radio;
+    private JButton yDownButton;
+    private JButton yUpButton;
+    private JRadioButton x10Radio;
+    private JRadioButton x1Radio;
+    private JRadioButton x01Radio;
+    private JButton xUpButton;
+    private JButton xDownButton;
+    public JTextField xLocField;
+    public JTextField yLocField;
+    private JButton locGoButton;
+    private JCheckBox relativeCheck;
 
     private JMenu fileMenu;
     private JMenuItem openGCodeItem;
@@ -51,6 +71,9 @@ public class MainWindow extends JFrame {
     private JFileChooser cmdChooser;
 
     private final GUIMain guiMain;
+
+    long xSteps;
+    long ySteps;
 
     public MainWindow(GUIMain guiMain) {
         super();
@@ -101,6 +124,54 @@ public class MainWindow extends JFrame {
             }
         });
         serialClearButton.addActionListener(e -> serialTextArea.setText(""));
+        serialSendButton.addActionListener(e -> guiMain.getLaser().getConnection().sendAsync(serialSendField.getText()));
+        startScriptButton.addActionListener(e -> guiMain.sendMessage(new StartScriptMessage()));
+        stopScriptButton.addActionListener(e -> guiMain.sendMessage(new StopScriptMessage()));
+        locGoButton.addActionListener(e -> {
+            try {
+                long xUm = NumberUtils.parseAxisLoc(xLocField.getText());
+                long yUm = NumberUtils.parseAxisLoc(yLocField.getText());
+
+                if (!relativeCheck.isSelected()) {
+                    guiMain.getLaser().move(new Location(xUm, yUm));
+                } else {
+                    guiMain.getLaser().moveBy(xUm, yUm);
+                }
+            } catch (ResponseFormatException ex) {
+                new PopupMessage(this, "Invalid input", "X and Y must be integer or decimal numbers.");
+            }
+        });
+        yUpButton.addActionListener(e -> moveAxis(false, true));
+        yDownButton.addActionListener(e -> moveAxis(false, false));
+        xUpButton.addActionListener(e -> moveAxis(true, true));
+        xDownButton.addActionListener(e -> moveAxis(true, false));
+    }
+
+    private void moveAxis(boolean axis, boolean direction) {
+        long xStep = 0;
+        long yStep = 0;
+        if (axis) {
+            if (x10Radio.isSelected()) {
+                xStep = 10000;
+            } else if (x1Radio.isSelected()) {
+                xStep = 1000;
+            } else if (x01Radio.isSelected()) {
+                xStep = 100;
+            }
+        } else {
+            if (y10Radio.isSelected()) {
+                yStep = 10000;
+            } else if (y1Radio.isSelected()) {
+                yStep = 1000;
+            } else if (y01Radio.isSelected()) {
+                yStep = 100;
+            }
+        }
+        if (!direction) {
+            xStep *= -1;
+            yStep *= -1;
+        }
+        guiMain.moveBy(xStep, yStep);
     }
 
     private void createUIComponents() {

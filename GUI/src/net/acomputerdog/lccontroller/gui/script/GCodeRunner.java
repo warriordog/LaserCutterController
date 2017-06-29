@@ -12,6 +12,7 @@ public class GCodeRunner implements ScriptRunner {
     String error = null;
     float progress = 0f;
     boolean ack = true; //true so first command can be sent
+    String lastLine;
 
     public GCodeRunner(GUIMain main, File file) throws FileNotFoundException {
         gcodeReader = new BufferedReader(new FileReader(file));
@@ -55,6 +56,7 @@ public class GCodeRunner implements ScriptRunner {
                         if (!line.isEmpty()) {
                             ack = false;
                             main.getLaser().getConnection().sendAsync(line);
+                            lastLine = line;
                         }
                     }
                 } else {
@@ -83,6 +85,11 @@ public class GCodeRunner implements ScriptRunner {
     @Override
     public String getErrors() {
         return error;
+    }
+
+    @Override
+    public String getLastLine() {
+        return lastLine;
     }
 
     private boolean isRunning() {
