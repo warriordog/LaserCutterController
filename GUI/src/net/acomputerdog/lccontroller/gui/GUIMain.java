@@ -45,6 +45,7 @@ public class GUIMain {
     private int lastLaserPower = -1;
     private Location lastLaserLocation = new Location(0, 0);
     private String lastStatus = null;
+    private boolean lastMotorState = false;
 
     // duration between I1 update commands (ms)
     private long laserUpdateInterval = 1000;
@@ -146,12 +147,17 @@ public class GUIMain {
                     }
                 }
 
-
                 Location loc = laser.getLocation();
                 if (!loc.equals(lastLaserLocation)) {
                     lastLaserLocation = loc;
                     mainWindow.xLocField.setText(String.format("%d.%d", loc.getXMM(), loc.getXUM() % 1000));
                     mainWindow.yLocField.setText(String.format("%d.%d", loc.getYMM(), loc.getYUM() % 1000));
+                }
+
+                boolean motorState = laser.getMotorState();
+                if (motorState != lastMotorState) {
+                    lastMotorState = motorState;
+                    mainWindow.motorStateField.setText(motorState ? "on" : "off");
                 }
             }
         });
@@ -244,6 +250,16 @@ public class GUIMain {
             } else if (m instanceof StopScriptMessage) {
                 if (currentScript != null && currentScript.getState() != ScriptState.FINISHED) {
                     currentScript.stop();
+                }
+            } else if (m instanceof LaserStateMessage) {
+                if (isConnected()) {
+                    if (((LaserStateMessage) m).state) {
+                        laser.enableMotors(true);
+                        mainWindow.laserPowerField.setText("on");
+                    } else {
+                        laser.enableMotors(false);
+                        mainWindow.laserPowerField.setText("off");
+                    }
                 }
             } else {
                 addLogLine("Error: Unknown message type: " + (m == null ? "null" : m.getClass().getName()));

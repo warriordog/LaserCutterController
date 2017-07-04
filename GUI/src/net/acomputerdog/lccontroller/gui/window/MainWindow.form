@@ -95,7 +95,7 @@
                   </component>
                 </children>
               </grid>
-              <grid id="e4ad7" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="e4ad7" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <splitpane position="left"/>
@@ -106,7 +106,7 @@
                   <grid id="adc6c" layout-manager="GridLayoutManager" row-count="2" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                     <margin top="0" left="0" bottom="0" right="0"/>
                     <constraints>
-                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="1" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="1" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties/>
                     <border type="etched"/>
@@ -198,7 +198,7 @@
                   <grid id="36afa" layout-manager="GridLayoutManager" row-count="2" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                     <margin top="0" left="0" bottom="0" right="0"/>
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties/>
                     <border type="etched"/>
@@ -313,10 +313,18 @@
                     <properties/>
                     <border type="etched"/>
                     <children>
+                      <component id="2b291" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <text value="Laser power:"/>
+                        </properties>
+                      </component>
                       <component id="105ba" class="javax.swing.JTextField" binding="laserPowerField">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                            <preferred-size width="150" height="-1"/>
+                            <preferred-size width="75" height="-1"/>
                           </grid>
                         </constraints>
                         <properties>
@@ -328,12 +336,53 @@
                           <caretAspectRatio class="java.lang.Float" value="0.04"/>
                         </clientProperties>
                       </component>
-                      <component id="2b291" class="javax.swing.JLabel">
+                    </children>
+                  </grid>
+                  <grid id="1e647" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties/>
+                    <border type="etched"/>
+                    <children>
+                      <component id="9465b" class="javax.swing.JLabel">
                         <constraints>
-                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties>
-                          <text value="Laser power:"/>
+                          <text value="Motor power:"/>
+                        </properties>
+                      </component>
+                      <component id="13f5e" class="javax.swing.JTextField" binding="motorStateField">
+                        <constraints>
+                          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                            <preferred-size width="75" height="-1"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <editable value="false"/>
+                          <enabled value="false"/>
+                          <text value="off"/>
+                        </properties>
+                        <clientProperties>
+                          <caretAspectRatio class="java.lang.Float" value="0.04"/>
+                        </clientProperties>
+                      </component>
+                      <component id="467fa" class="javax.swing.JButton" binding="motorOnButton">
+                        <constraints>
+                          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <text value="On"/>
+                        </properties>
+                      </component>
+                      <component id="f2c0a" class="javax.swing.JButton" binding="motorOffButton">
+                        <constraints>
+                          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <text value="Off"/>
                         </properties>
                       </component>
                     </children>

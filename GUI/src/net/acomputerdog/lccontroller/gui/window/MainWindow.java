@@ -62,6 +62,9 @@ public class MainWindow extends JFrame {
     public JTextField xLocField;
     public JTextField yLocField;
     public ComponentScriptPath scriptPreview;
+    public JTextField motorStateField;
+    private JButton motorOnButton;
+    private JButton motorOffButton;
 
     private JMenu fileMenu;
     private JMenuItem openGCodeItem;
@@ -149,6 +152,8 @@ public class MainWindow extends JFrame {
         xUpButton.addActionListener(e -> moveAxis(true, true));
         xDownButton.addActionListener(e -> moveAxis(true, false));
         propertiesItem.addActionListener(e -> new LaserPropWindow(this, main));
+        motorOnButton.addActionListener(e -> main.sendMessage(new LaserStateMessage(true)));
+        motorOffButton.addActionListener(e -> main.sendMessage(new LaserStateMessage(false)));
     }
 
     private void moveAxis(boolean axis, boolean direction) {
