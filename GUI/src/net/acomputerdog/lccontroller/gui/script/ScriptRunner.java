@@ -1,11 +1,14 @@
 package net.acomputerdog.lccontroller.gui.script;
 
+import java.io.IOException;
+
 public interface ScriptRunner {
-    boolean isStarted();
-    boolean isFinished();
+    ScriptState getState();
+
+    void load() throws IOException;
+    void start();
 
     void stop();
-    void start();
 
     void tick();
     void onAck();
@@ -13,5 +16,6 @@ public interface ScriptRunner {
     float getEstimatedProgress();
     String getErrors();
 
+    String[] getLines();
     String getLastLine();
 }

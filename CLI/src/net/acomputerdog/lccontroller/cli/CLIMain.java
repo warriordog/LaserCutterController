@@ -3,6 +3,7 @@ package net.acomputerdog.lccontroller.cli;
 import com.fazecast.jSerialComm.SerialPort;
 import net.acomputerdog.lccontroller.IOConnection;
 import net.acomputerdog.lccontroller.LaserCutter;
+import net.acomputerdog.lccontroller.LaserProperties;
 import net.acomputerdog.lccontroller.ex.LaserException;
 
 import java.util.InputMismatchException;
@@ -88,12 +89,16 @@ public class CLIMain implements CLIInput, CLIOutput {
         int dataBits;
         int stopBits;
         int parity;
-        if (args.length != 5) {
+        int propWidth;
+        int propHeight;
+        if (args.length != 7) {
             port = getPort();
             baud = getBaud();
             dataBits = getDataBits();
             stopBits = getStopBits();
             parity = getParity();
+            propWidth = getPropWidth();
+            propHeight = getPropHeight();
 
             // read from args
         } else {
@@ -103,6 +108,8 @@ public class CLIMain implements CLIInput, CLIOutput {
                 dataBits = Integer.parseInt(args[2]);
                 stopBits = Integer.parseInt(args[3]);
                 parity = Integer.parseInt(args[4]);
+                propWidth = Integer.parseInt(args[5]);
+                propHeight = Integer.parseInt(args[6]);
             } catch (NumberFormatException e) {
                 System.out.println("Port parameters must be integers.");
                 return; //exit
@@ -125,7 +132,8 @@ public class CLIMain implements CLIInput, CLIOutput {
         LaserCutter laser;
         try {
             System.out.print("Connecting to printer...");
-            laser = new LaserCutter(connection);
+            LaserProperties properties = new LaserProperties(propWidth, propHeight);
+            laser = new LaserCutter(connection, properties);
             System.out.println("OK.");
         } catch (LaserException e) {
             System.out.println("failed.");
@@ -208,6 +216,38 @@ public class CLIMain implements CLIInput, CLIOutput {
                     System.out.println("Parity must be between 0 and 4.");
                 } else {
                     return par;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Please enter an integer.");
+            }
+        }
+    }
+
+    private static int getPropWidth() {
+        while (true) {
+            try {
+                System.out.print("Enter property 'width': ");
+                int width = keyboard.nextInt();
+                if (width < 1) {
+                    System.out.println("Width must be at least 1.");
+                } else {
+                    return width;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Please enter an integer.");
+            }
+        }
+    }
+
+    private static int getPropHeight() {
+        while (true) {
+            try {
+                System.out.print("Enter property 'height': ");
+                int height = keyboard.nextInt();
+                if (height < 1) {
+                    System.out.println("Height must be at least 1.");
+                } else {
+                    return height;
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Please enter an integer.");

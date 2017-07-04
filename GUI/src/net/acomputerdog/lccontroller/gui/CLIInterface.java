@@ -34,7 +34,7 @@ public class CLIInterface extends CLIMain implements Runnable {
 
     @Override
     public void send(String message) {
-        guiMain.receiveCLImessage(message);
+        guiMain.receiveCLIMessage(message);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class CLIInterface extends CLIMain implements Runnable {
             lineLock.release();
             lineNotifier.release();
         } else {
-            guiMain.receiveCLImessage("That command is disabled, please use the equivalent feature in the GUI interface.");
+            guiMain.receiveCLIMessage("That command is disabled, please use the equivalent feature in the GUI interface.");
         }
     }
 

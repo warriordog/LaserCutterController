@@ -2,6 +2,7 @@ package net.acomputerdog.lccontroller.gui.window;
 
 import net.acomputerdog.lccontroller.Location;
 import net.acomputerdog.lccontroller.ex.ResponseFormatException;
+import net.acomputerdog.lccontroller.gui.ComponentScriptPath;
 import net.acomputerdog.lccontroller.gui.GUIMain;
 import net.acomputerdog.lccontroller.gui.message.*;
 import net.acomputerdog.lccontroller.util.NumberUtils;
@@ -60,6 +61,7 @@ public class MainWindow extends JFrame {
     public JTextField laserPowerField;
     public JTextField xLocField;
     public JTextField yLocField;
+    public ComponentScriptPath scriptPreview;
 
     private JMenu fileMenu;
     private JMenuItem openGCodeItem;
@@ -68,48 +70,47 @@ public class MainWindow extends JFrame {
     private JMenu printerMenu;
     private JMenuItem connectItem;
     private JMenuItem disconnectItem;
+    private JMenuItem propertiesItem;
 
     private JFileChooser gcodeChooser;
     private JFileChooser cmdChooser;
 
-    private final GUIMain guiMain;
+    private final GUIMain main;
 
-    long xSteps;
-    long ySteps;
-
-    public MainWindow(GUIMain guiMain) {
+    public MainWindow(GUIMain main) {
         super();
         super.setTitle("Laser Cutter Controller");
         super.setContentPane(mainPanel);
         super.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
-                guiMain.shutdown();
+                main.shutdown();
             }
         });
         super.setMinimumSize(new Dimension(640, 480));
         super.pack();
 
-        this.guiMain = guiMain;
+        this.main = main;
+        scriptPreview.setMain(main);
 
         logTextArea.setText("Window created.\n");
 
         // add listeners
-        exitMenuItem.addActionListener(e -> guiMain.shutdown());
-        connectItem.addActionListener(e -> new ConnectWindow(this, guiMain).setVisible(true));
-        disconnectItem.addActionListener(e -> guiMain.sendMessage(new DisconnectMessage()));
+        exitMenuItem.addActionListener(e -> main.shutdown());
+        connectItem.addActionListener(e -> new ConnectWindow(this, main).setVisible(true));
+        disconnectItem.addActionListener(e -> main.sendMessage(new DisconnectMessage()));
         cliSendButton.addActionListener(e -> {
-            if (guiMain.getCLIInterface() != null) {
+            if (main.getCLIInterface() != null) {
                 cliTextArea.append(cliSendField.getText());
                 cliTextArea.append("\n");
-                guiMain.getCLIInterface().sendLineToCLI(cliSendField.getText());
+                main.getCLIInterface().sendLineToCLI(cliSendField.getText());
             }
         });
         openGCodeItem.addActionListener(e -> {
             if (gcodeChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File gcode = gcodeChooser.getSelectedFile();
                 if (gcode.isFile()) {
-                    guiMain.sendMessage(new OpenGCodeMessage(gcode));
+                    main.sendMessage(new OpenGCodeMessage(gcode));
                 } else {
                     new PopupMessage(this, "Invalid input", "GCode file must be a file.");
                 }
@@ -119,25 +120,25 @@ public class MainWindow extends JFrame {
             if (cmdChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File gcode = cmdChooser.getSelectedFile();
                 if (gcode.isFile()) {
-                    guiMain.sendMessage(new OpenCMDMessage(gcode));
+                    main.sendMessage(new OpenCMDMessage(gcode));
                 } else {
                     new PopupMessage(this, "Invalid input", "CMD file must be a file.");
                 }
             }
         });
         serialClearButton.addActionListener(e -> serialTextArea.setText(""));
-        serialSendButton.addActionListener(e -> guiMain.getLaser().getConnection().sendAsync(serialSendField.getText()));
-        startScriptButton.addActionListener(e -> guiMain.sendMessage(new StartScriptMessage()));
-        stopScriptButton.addActionListener(e -> guiMain.sendMessage(new StopScriptMessage()));
+        serialSendButton.addActionListener(e -> main.getLaser().getConnection().sendAsync(serialSendField.getText()));
+        startScriptButton.addActionListener(e -> main.sendMessage(new StartScriptMessage()));
+        stopScriptButton.addActionListener(e -> main.sendMessage(new StopScriptMessage()));
         locGoButton.addActionListener(e -> {
             try {
                 long xUm = NumberUtils.parseAxisLoc(newXLocField.getText());
                 long yUm = NumberUtils.parseAxisLoc(newYLocField.getText());
 
                 if (!relativeCheck.isSelected()) {
-                    guiMain.getLaser().move(new Location(xUm, yUm));
+                    main.getLaser().move(new Location(xUm, yUm));
                 } else {
-                    guiMain.getLaser().moveBy(xUm, yUm);
+                    main.getLaser().moveBy(xUm, yUm);
                 }
             } catch (ResponseFormatException ex) {
                 new PopupMessage(this, "Invalid input", "X and Y must be integer or decimal numbers.");
@@ -147,6 +148,7 @@ public class MainWindow extends JFrame {
         yDownButton.addActionListener(e -> moveAxis(false, false));
         xUpButton.addActionListener(e -> moveAxis(true, true));
         xDownButton.addActionListener(e -> moveAxis(true, false));
+        propertiesItem.addActionListener(e -> new LaserPropWindow(this, main));
     }
 
     private void moveAxis(boolean axis, boolean direction) {
@@ -174,9 +176,9 @@ public class MainWindow extends JFrame {
             yStep *= -1;
         }
 
-        if (guiMain.isConnected()) {
-            guiMain.moveBy(xStep, yStep);
-            Location loc = guiMain.getLaser().getLocation();
+        if (main.isConnected()) {
+            main.moveBy(xStep, yStep);
+            Location loc = main.getLaser().getLocation();
             newXLocField.setText(String.format("%d.%d", loc.getXMM(), (loc.getXUM() % 1000)));
             newYLocField.setText(String.format("%d.%d", loc.getYMM(), (loc.getYUM() % 1000)));
         }
@@ -195,12 +197,15 @@ public class MainWindow extends JFrame {
         exitMenuItem = new JMenuItem("Exit");
         fileMenu.add(exitMenuItem);
         menuBar.add(fileMenu);
-        printerMenu = new JMenu("Printer");
-        printerMenu.setMnemonic(KeyEvent.VK_P);
+        printerMenu = new JMenu("Machine");
+        printerMenu.setMnemonic(KeyEvent.VK_M);
         connectItem = new JMenuItem("Connect");
         printerMenu.add(connectItem);
         disconnectItem = new JMenuItem("Disconnect");
         printerMenu.add(disconnectItem);
+        printerMenu.addSeparator();
+        propertiesItem = new JMenuItem("Properties");
+        printerMenu.add(propertiesItem);
         menuBar.add(printerMenu);
 
         // create choosers
@@ -213,5 +218,8 @@ public class MainWindow extends JFrame {
         cmdChooser.setDialogTitle("Open a CMD script");
         cmdChooser.setMultiSelectionEnabled(false);
         cmdChooser.addChoosableFileFilter(new FileNameExtensionFilter("CMD scripts", "lcmd"));
+
+        // create preview
+        scriptPreview = new ComponentScriptPath();
     }
 }

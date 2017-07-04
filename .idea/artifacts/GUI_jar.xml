@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
   <artifact type="jar" build-on-make="true" name="GUI:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/GUI_jar</output-path>
-    <root id="archive" name="GUI.jar">
+    <output-path>$PROJECT_DIR$/out/artifacts</output-path>
+    <root id="archive" name="LPGUI.jar">
       <element id="module-output" name="GUI" />
       <element id="module-output" name="CLI" />
       <element id="module-output" name="Core" />

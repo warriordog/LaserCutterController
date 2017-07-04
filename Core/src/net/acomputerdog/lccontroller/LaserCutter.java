@@ -11,6 +11,7 @@ public class LaserCutter {
     public static final long DEFAULT_TIMEOUT = 4000L;
 
     private final IOConnection connection;
+    private final LaserProperties properties;
     private final String fwLine;
 
     private Location currLocation = new Location(0, 0);
@@ -19,8 +20,9 @@ public class LaserCutter {
     private boolean laserOn = false;
     private int laserPower = 0;
 
-    public LaserCutter(IOConnection connection) {
+    public LaserCutter(IOConnection connection, LaserProperties properties) {
         this.connection = connection;
+        this.properties = properties;
 
         this.fwLine = connection.waitForLine(DEFAULT_TIMEOUT);
         if (fwLine == null) {
@@ -261,5 +263,9 @@ public class LaserCutter {
 
     public void requestImmediateUpdate() {
         connection.sendAsync("I1");
+    }
+
+    public LaserProperties getProperties() {
+        return properties;
     }
 }

@@ -3,10 +3,12 @@ package net.acomputerdog.lccontroller.gui;
 import com.fazecast.jSerialComm.SerialPort;
 import net.acomputerdog.lccontroller.IOConnection;
 import net.acomputerdog.lccontroller.LaserCutter;
+import net.acomputerdog.lccontroller.LaserProperties;
 import net.acomputerdog.lccontroller.Location;
 import net.acomputerdog.lccontroller.gui.message.*;
 import net.acomputerdog.lccontroller.gui.script.GCodeRunner;
 import net.acomputerdog.lccontroller.gui.script.ScriptRunner;
+import net.acomputerdog.lccontroller.gui.script.ScriptState;
 import net.acomputerdog.lccontroller.gui.window.MainWindow;
 import net.acomputerdog.lccontroller.gui.window.PopupMessage;
 import net.acomputerdog.lccontroller.util.MessagePipe;
@@ -22,6 +24,7 @@ public class GUIMain {
 
     private final MainWindow mainWindow;
 
+    private LaserProperties properties;
     private LaserCutter laser;
     private CLIInterface cliInterface;
 
@@ -73,7 +76,7 @@ public class GUIMain {
         threadTasks.add(() -> {
             if (currentScript != null) {
                 // end script
-                if (currentScript.isFinished()) {
+                if (currentScript.getState() == ScriptState.FINISHED) {
                     String error = currentScript.getErrors();
                     if (error != null) {
                         scriptStatus = "Script failed: " + error;
@@ -83,8 +86,19 @@ public class GUIMain {
                     }
                     addLogLine("Script finished.");
                     currentScript = null;
+                    // load script
+                } else if (currentScript.getState() == ScriptState.NOT_STARTED) {
+                    try {
+                        scriptStatus = "Script loading...";
+                        currentScript.load();
+                        mainWindow.scriptPreview.setScript(currentScript);
+                        scriptStatus = "Script ready.";
+                        addLogLine(String.format("Loaded script with %d lines.", currentScript.getLines().length));
+                    } catch (IOException e) {
+                        logException("Exception loading script.", e);
+                    }
                     // tick script
-                } else if (currentScript.isStarted()) {
+                } else if (currentScript.getState() == ScriptState.RUNNING) {
                     scriptStatus = "Script running.";
                     currentScript.tick();
                     mainWindow.scriptLastInstruction.setText(currentScript.getLastLine());
@@ -98,7 +112,7 @@ public class GUIMain {
 
         // add a task to set status bar message
         threadTasks.add(() -> {
-            String state = "Error: Unknown state";
+            String state;
             if (isConnected()) {
                 state = "Connected.";
             } else {
@@ -107,6 +121,10 @@ public class GUIMain {
 
             if (scriptStatus != null) {
                 state = scriptStatus;
+            }
+
+            if (mainWindow.scriptPreview.isDrawing()) {
+                state = "Drawing preview...";
             }
 
             if (!state.equals(lastStatus)) {
@@ -148,6 +166,13 @@ public class GUIMain {
                     lastRunTime = System.currentTimeMillis();
                     laser.requestImmediateUpdate();
                 }
+            }
+        });
+
+        // add a task to draw script preview
+        threadTasks.add(() -> {
+            if (mainWindow.scriptPreview.isDrawing()) {
+                mainWindow.scriptPreview.updateDraw();
             }
         });
 
@@ -204,16 +229,20 @@ public class GUIMain {
                 new PopupMessage(mainWindow, "Not Implemented", "Sorry, that feature is not yet implemented.");
             } else if (m instanceof StartScriptMessage) {
                 if (currentScript != null) {
-                    if (!currentScript.isStarted()) {
+                    if (currentScript.getState() == ScriptState.LOADED) {
                         currentScript.start();
-                    } else {
+                    } else if (currentScript.getState() == ScriptState.RUNNING) {
                         new PopupMessage(mainWindow, "Script already running", "The script is already running.");
+                    } else if (currentScript.getState() == ScriptState.FINISHED) {
+                        new PopupMessage(mainWindow, "Script already finished", "The script has already finished.  Please reload it to run it again.");
+                    } else if (currentScript.getState() == ScriptState.NOT_STARTED) {
+                        new PopupMessage(mainWindow, "Script not loaded", "Please wait for the script to finish loading.");
                     }
                 } else {
-                    new PopupMessage(mainWindow, "Script not loaded", "Please load a script from the \"printer\" menu.");
+                    new PopupMessage(mainWindow, "Script not selected", "Please load a script from the \"printer\" menu.");
                 }
             } else if (m instanceof StopScriptMessage) {
-                if (currentScript != null) {
+                if (currentScript != null && currentScript.getState() != ScriptState.FINISHED) {
                     currentScript.stop();
                 }
             } else {
@@ -236,7 +265,7 @@ public class GUIMain {
         addLogLine("Main thread started.");
     }
 
-    public void receiveCLImessage(String line) {
+    public void receiveCLIMessage(String line) {
         mainWindow.cliTextArea.append(line);
     }
 
@@ -249,6 +278,11 @@ public class GUIMain {
                     port.setComPortParameters(baud, dataBits, stopBits, parity);
                     port.setFlowControl(flowMode);
                     if (port.openPort()) {
+                        // set up properties
+                        if (properties == null) {
+                            addLogLine("Setting default properties.");
+                            this.properties = new LaserProperties(915, 610);
+                        }
 
                         // connect to serial
                         IOConnection connection = new IOConnection(port);
@@ -269,7 +303,7 @@ public class GUIMain {
                         });
 
                         // connect to printer
-                        laser = new LaserCutter(connection);
+                        laser = new LaserCutter(connection, properties);
 
                         // set up CLI
                         cliInterface = new CLIInterface(connection, laser, this);
@@ -367,6 +401,14 @@ public class GUIMain {
         if (laser != null) {
             laser.moveBy(xUm, yUm);
         }
+    }
+
+    public LaserProperties getLaserProperties() {
+        return properties;
+    }
+
+    public void setLaserProperties(LaserProperties properties) {
+        this.properties = properties;
     }
 
     public static void main(String[] args) {
