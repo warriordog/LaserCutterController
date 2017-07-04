@@ -106,7 +106,9 @@ public class MainWindow extends JFrame {
             if (main.getCLIInterface() != null) {
                 cliTextArea.append(cliSendField.getText());
                 cliTextArea.append("\n");
-                main.getCLIInterface().sendLineToCLI(cliSendField.getText());
+
+                main.sendMessage(new CLIMessage(cliSendField.getText()));
+                //main.getCLIInterface().sendLineToCLI(cliSendField.getText());
             }
         });
         openGCodeItem.addActionListener(e -> {
@@ -130,18 +132,23 @@ public class MainWindow extends JFrame {
             }
         });
         serialClearButton.addActionListener(e -> serialTextArea.setText(""));
-        serialSendButton.addActionListener(e -> main.getLaser().getConnection().sendAsync(serialSendField.getText()));
+        serialSendButton.addActionListener(e -> {
+            //main.getLaser().getConnection().sendAsync(serialSendField.getText());
+            main.sendMessage(new SerialAsyncMessage(serialSendField.getText()));
+        });
         startScriptButton.addActionListener(e -> main.sendMessage(new StartScriptMessage()));
         stopScriptButton.addActionListener(e -> main.sendMessage(new StopScriptMessage()));
         locGoButton.addActionListener(e -> {
             try {
-                long xUm = NumberUtils.parseAxisLoc(newXLocField.getText());
-                long yUm = NumberUtils.parseAxisLoc(newYLocField.getText());
+                long xUm = NumberUtils.parseAxisLoc(xLocField.getText());
+                long yUm = NumberUtils.parseAxisLoc(yLocField.getText());
 
                 if (!relativeCheck.isSelected()) {
-                    main.getLaser().move(new Location(xUm, yUm));
+                    main.sendMessage(new LaserMoveMessage(new Location(xUm, yUm)));
+                    //main.getLaser().move(new Location(xUm, yUm));
                 } else {
-                    main.getLaser().moveBy(xUm, yUm);
+                    main.sendMessage(new LaserMoveByMessage(xUm, yUm));
+                    //main.getLaser().moveBy(xUm, yUm);
                 }
             } catch (ResponseFormatException ex) {
                 new PopupMessage(this, "Invalid input", "X and Y must be integer or decimal numbers.");
@@ -182,10 +189,12 @@ public class MainWindow extends JFrame {
         }
 
         if (main.isConnected()) {
-            main.moveBy(xStep, yStep);
             Location loc = main.getLaser().getLocation();
-            newXLocField.setText(String.format("%d.%d", loc.getXMM(), (loc.getXUM() % 1000)));
-            newYLocField.setText(String.format("%d.%d", loc.getYMM(), (loc.getYUM() % 1000)));
+            xLocField.setText(String.format("%d.%d", loc.getXMM(), (loc.getXUM() % 1000)));
+            yLocField.setText(String.format("%d.%d", loc.getYMM(), (loc.getYUM() % 1000)));
+
+            main.sendMessage(new LaserMoveByMessage(xStep, yStep));
+            //main.moveBy(xStep, yStep);
         }
     }
 

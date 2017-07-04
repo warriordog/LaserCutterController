@@ -261,6 +261,22 @@ public class GUIMain {
                         mainWindow.laserPowerField.setText("off");
                     }
                 }
+            } else if (m instanceof CLIMessage) {
+                if (isConnected()) {
+                    cliInterface.sendLineToCLI(((CLIMessage) m).command);
+                }
+            } else if (m instanceof SerialAsyncMessage) {
+                if (isConnected()) {
+                    laser.getConnection().sendAsync(((SerialAsyncMessage) m).command);
+                }
+            } else if (m instanceof LaserMoveMessage) {
+                if (isConnected()) {
+                    laser.move(((LaserMoveMessage) m).loc);
+                }
+            } else if (m instanceof LaserMoveByMessage) {
+                if (isConnected()) {
+                    moveBy(((LaserMoveByMessage) m).xUm, ((LaserMoveByMessage) m).yUm);
+                }
             } else {
                 addLogLine("Error: Unknown message type: " + (m == null ? "null" : m.getClass().getName()));
             }
