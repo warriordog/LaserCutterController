@@ -331,7 +331,7 @@ public class GUIMain {
                             mainWindow.serialTextArea.append(line.replace('\n', '□'));
                             mainWindow.serialTextArea.append("\n");
 
-                            // record ACks for script
+                            // record ACKs for script
                             if (currentScript != null && line.equals("OK")) {
                                 currentScript.onAck();
                             }

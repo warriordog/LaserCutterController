@@ -37,6 +37,15 @@ public class IOConnection {
         this.serialIn = serialPort.getInputStream();
         this.serialOut = new OutputStreamWriter(serialPort.getOutputStream());
 
+        // flush buffer in case there is already data
+        try {
+            while (serialIn.available() > 0) {
+                serialIn.read();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Exception flushing read buffer.", e);
+        }
+
         this.serialReader = new Thread(new Runnable() {
             private char[] buffer = new char[INPUT_BUFFER_SIZE];
             private int bufferPos = 0;
@@ -77,8 +86,6 @@ public class IOConnection {
                         }
                     }
                 } catch (Exception e) {
-                    //System.err.println("Exception in serial read thread.");
-                    //e.printStackTrace();
                     close();
                 }
             }

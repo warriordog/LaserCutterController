@@ -62,9 +62,6 @@ public class LaserCutter {
         if (!sendLine(String.format("G0 X%d Y%d F%d\n", loc.getXUM(), loc.getYUM(), speed))) {
             throw new IOTimeoutException("Laser did not respond to G0 in time.");
         }
-
-        // wait for progress update
-        //currLocation.set(loc);
     }
 
     public long getSpeed() {
