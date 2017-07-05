@@ -251,9 +251,9 @@ public class GUIMain {
                 if (currentScript != null && currentScript.getState() != ScriptState.FINISHED) {
                     currentScript.stop();
                 }
-            } else if (m instanceof LaserStateMessage) {
+            } else if (m instanceof MotorStateMessage) {
                 if (isConnected()) {
-                    if (((LaserStateMessage) m).state) {
+                    if (((MotorStateMessage) m).state) {
                         laser.enableMotors(true);
                         mainWindow.laserPowerField.setText("on");
                     } else {
@@ -269,13 +269,21 @@ public class GUIMain {
                 if (isConnected()) {
                     laser.getConnection().sendAsync(((SerialAsyncMessage) m).command);
                 }
-            } else if (m instanceof LaserMoveMessage) {
+            } else if (m instanceof MotorMoveMessage) {
                 if (isConnected()) {
-                    laser.move(((LaserMoveMessage) m).loc);
+                    laser.move(((MotorMoveMessage) m).loc);
                 }
-            } else if (m instanceof LaserMoveByMessage) {
+            } else if (m instanceof MotorMoveByMessage) {
                 if (isConnected()) {
-                    moveBy(((LaserMoveByMessage) m).xUm, ((LaserMoveByMessage) m).yUm);
+                    moveBy(((MotorMoveByMessage) m).xUm, ((MotorMoveByMessage) m).yUm);
+                }
+            } else if (m instanceof SetLaserPowerMessage) {
+                if (isConnected()) {
+                    laser.setLaserPower(((SetLaserPowerMessage) m).power);
+                }
+            } else if (m instanceof SetLaserStateMessage) {
+                if (isConnected()) {
+                    laser.setLaserState(((SetLaserStateMessage) m).state);
                 }
             } else {
                 addLogLine("Error: Unknown message type: " + (m == null ? "null" : m.getClass().getName()));

@@ -74,6 +74,8 @@ public class MainWindow extends JFrame {
     private JMenuItem connectItem;
     private JMenuItem disconnectItem;
     private JMenuItem propertiesItem;
+    private JMenu debugMenu;
+    private JMenuItem debugLaserItem;
 
     private JFileChooser gcodeChooser;
     private JFileChooser cmdChooser;
@@ -144,10 +146,10 @@ public class MainWindow extends JFrame {
                 long yUm = NumberUtils.parseAxisLoc(yLocField.getText());
 
                 if (!relativeCheck.isSelected()) {
-                    main.sendMessage(new LaserMoveMessage(new Location(xUm, yUm)));
+                    main.sendMessage(new MotorMoveMessage(new Location(xUm, yUm)));
                     //main.getLaser().move(new Location(xUm, yUm));
                 } else {
-                    main.sendMessage(new LaserMoveByMessage(xUm, yUm));
+                    main.sendMessage(new MotorMoveByMessage(xUm, yUm));
                     //main.getLaser().moveBy(xUm, yUm);
                 }
             } catch (ResponseFormatException ex) {
@@ -159,8 +161,9 @@ public class MainWindow extends JFrame {
         xUpButton.addActionListener(e -> moveAxis(true, true));
         xDownButton.addActionListener(e -> moveAxis(true, false));
         propertiesItem.addActionListener(e -> new LaserPropWindow(this, main));
-        motorOnButton.addActionListener(e -> main.sendMessage(new LaserStateMessage(true)));
-        motorOffButton.addActionListener(e -> main.sendMessage(new LaserStateMessage(false)));
+        motorOnButton.addActionListener(e -> main.sendMessage(new MotorStateMessage(true)));
+        motorOffButton.addActionListener(e -> main.sendMessage(new MotorStateMessage(false)));
+        debugLaserItem.addActionListener(e -> new DebugLaserWindow(this));
     }
 
     private void moveAxis(boolean axis, boolean direction) {
@@ -193,7 +196,7 @@ public class MainWindow extends JFrame {
             xLocField.setText(String.format("%d.%d", loc.getXMM(), (loc.getXUM() % 1000)));
             yLocField.setText(String.format("%d.%d", loc.getYMM(), (loc.getYUM() % 1000)));
 
-            main.sendMessage(new LaserMoveByMessage(xStep, yStep));
+            main.sendMessage(new MotorMoveByMessage(xStep, yStep));
             //main.moveBy(xStep, yStep);
         }
     }
@@ -201,6 +204,7 @@ public class MainWindow extends JFrame {
     private void createUIComponents() {
         // create menu
         menuBar = new JMenuBar();
+
         fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
         openGCodeItem = new JMenuItem("Open GCode file");
@@ -211,6 +215,7 @@ public class MainWindow extends JFrame {
         exitMenuItem = new JMenuItem("Exit");
         fileMenu.add(exitMenuItem);
         menuBar.add(fileMenu);
+
         printerMenu = new JMenu("Machine");
         printerMenu.setMnemonic(KeyEvent.VK_M);
         connectItem = new JMenuItem("Connect");
@@ -221,6 +226,12 @@ public class MainWindow extends JFrame {
         propertiesItem = new JMenuItem("Properties");
         printerMenu.add(propertiesItem);
         menuBar.add(printerMenu);
+
+        debugMenu = new JMenu("Debug");
+        debugMenu.setMnemonic(KeyEvent.VK_D);
+        debugLaserItem = new JMenuItem("Laser");
+        debugMenu.add(debugLaserItem);
+        menuBar.add(debugMenu);
 
         // create choosers
         gcodeChooser = new JFileChooser();
@@ -235,5 +246,9 @@ public class MainWindow extends JFrame {
 
         // create preview
         scriptPreview = new ComponentScriptPath();
+    }
+
+    public GUIMain getMain() {
+        return main;
     }
 }

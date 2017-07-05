@@ -149,11 +149,11 @@ public class CLIParser {
                     break;
                 }
                 case "laseron": {
-                    laser.enableLaser(true);
+                    laser.setLaserState(true);
                     break;
                 }
                 case "laseroff": {
-                    laser.enableLaser(false);
+                    laser.setLaserState(false);
                     break;
                 }
                 case "laserpower": {

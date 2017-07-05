@@ -19,6 +19,7 @@ public class LaserCutter {
     private boolean motorsOn = false;
     private boolean laserOn = false;
     private int laserPower = 0;
+    private boolean laserSafetyEngaged = false;
 
     public LaserCutter(IOConnection connection, LaserProperties properties) {
         this.connection = connection;
@@ -31,7 +32,7 @@ public class LaserCutter {
 
         updateLocation();
         enableMotors(motorsOn);
-        enableLaser(laserOn);
+        setLaserState(laserOn);
         setLaserPower(laserPower);
 
         // listen in on gcode responses to keep state
@@ -180,6 +181,9 @@ public class LaserCutter {
                         case 'S':
                             laserPower = (int) num;
                             break;
+                        case 'T':
+                            laserSafetyEngaged = (num == 1);
+                            break;
                         default:
                             //invalid letter, ignore
                             break;
@@ -212,7 +216,7 @@ public class LaserCutter {
         this.motorsOn = enable;
     }
 
-    public void enableLaser(boolean enable) {
+    public void setLaserState(boolean enable) {
         String line;
         if (enable) {
             line = "M4 S" + String.valueOf(laserPower);
@@ -229,7 +233,7 @@ public class LaserCutter {
         this.laserPower = power;
         if (laserOn) {
             // send to laser
-            enableLaser(true);
+            setLaserState(true);
         }
     }
 
@@ -267,5 +271,9 @@ public class LaserCutter {
 
     public LaserProperties getProperties() {
         return properties;
+    }
+
+    public boolean isLaserSafetyEngaged() {
+        return laserSafetyEngaged;
     }
 }
