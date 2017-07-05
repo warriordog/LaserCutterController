@@ -236,13 +236,13 @@ public class ComponentScriptPath extends JPanel {
         // vertical lines
         for (int x = 0; x < 10; x++) {
             int xLoc = Math.round((float) x * xSpacing);
-            g.drawLine(xLoc, 0, xLoc, height);
+            drawThickLine(g, xLoc, 0, xLoc, height, 2);
         }
 
         // horizontal lines
         for (int y = 0; y < 10; y++) {
             int yLoc = Math.round((float) y * ySpacing);
-            g.drawLine(0, yLoc, width, yLoc);
+            drawThickLine(g, 0, yLoc, width, yLoc, 2);
         }
     }
 
