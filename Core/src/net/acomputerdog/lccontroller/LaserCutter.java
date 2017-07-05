@@ -63,7 +63,8 @@ public class LaserCutter {
             throw new IOTimeoutException("Laser did not respond to G0 in time.");
         }
 
-        currLocation.set(loc);
+        // wait for progress update
+        //currLocation.set(loc);
     }
 
     public long getSpeed() {

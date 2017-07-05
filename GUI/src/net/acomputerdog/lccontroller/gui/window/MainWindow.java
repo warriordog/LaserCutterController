@@ -110,7 +110,6 @@ public class MainWindow extends JFrame {
                 cliTextArea.append("\n");
 
                 main.sendMessage(new CLIMessage(cliSendField.getText()));
-                //main.getCLIInterface().sendLineToCLI(cliSendField.getText());
             }
         });
         openGCodeItem.addActionListener(e -> {
@@ -134,23 +133,18 @@ public class MainWindow extends JFrame {
             }
         });
         serialClearButton.addActionListener(e -> serialTextArea.setText(""));
-        serialSendButton.addActionListener(e -> {
-            //main.getLaser().getConnection().sendAsync(serialSendField.getText());
-            main.sendMessage(new SerialAsyncMessage(serialSendField.getText()));
-        });
+        serialSendButton.addActionListener(e -> main.sendMessage(new SerialAsyncMessage(serialSendField.getText())));
         startScriptButton.addActionListener(e -> main.sendMessage(new StartScriptMessage()));
         stopScriptButton.addActionListener(e -> main.sendMessage(new StopScriptMessage()));
         locGoButton.addActionListener(e -> {
             try {
-                long xUm = NumberUtils.parseAxisLoc(xLocField.getText());
-                long yUm = NumberUtils.parseAxisLoc(yLocField.getText());
+                long xUm = NumberUtils.parseAxisLoc(newXLocField.getText());
+                long yUm = NumberUtils.parseAxisLoc(newYLocField.getText());
 
                 if (!relativeCheck.isSelected()) {
                     main.sendMessage(new MotorMoveMessage(new Location(xUm, yUm)));
-                    //main.getLaser().move(new Location(xUm, yUm));
                 } else {
                     main.sendMessage(new MotorMoveByMessage(xUm, yUm));
-                    //main.getLaser().moveBy(xUm, yUm);
                 }
             } catch (ResponseFormatException ex) {
                 new PopupMessage(this, "Invalid input", "X and Y must be integer or decimal numbers.");
